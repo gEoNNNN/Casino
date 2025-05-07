@@ -9,9 +9,7 @@ export function updateBalance(newBalance: number) {
   if (localStorage.getItem('balance') !== null) {
     const roundedBalance = parseFloat(newBalance.toFixed(2)); // Round to 2 decimal places
     localStorage.setItem('balance', JSON.stringify(roundedBalance));
-  } else {
-    console.warn('Balance does not exist. Use storeBalance to set it first.');
-  }
+  } 
 }
 
 // Delete the balance value
