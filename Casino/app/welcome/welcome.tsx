@@ -86,7 +86,18 @@ export function Welcome() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#222B4C] text-white flex">
+    <main
+      className="min-h-screen w-full text-white flex relative"
+      style={{
+        background: `
+          linear-gradient(135deg, #181c2f 0%, #232943 100%),
+          radial-gradient(circle at 60% 40%, rgba(255,215,0,0.08) 0, transparent 60%),
+          radial-gradient(circle at 30% 80%, rgba(0,255,255,0.06) 0, transparent 70%)
+        `,
+        backgroundBlendMode: 'overlay, lighten, normal',
+        backgroundColor: '#181c2f'
+      }}
+    >
       {/* Balance Display */}
       <div className="relative w-[10vw] mt-[2vw] ml-[3vw]">
         <img className="w-[20vw]" src={balancebg} alt="balance background" />

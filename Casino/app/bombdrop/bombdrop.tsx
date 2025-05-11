@@ -3,12 +3,17 @@ import bg from "../../assets/img/bombdropbg.png";
 import historybg from "../../assets/img/historybg.png";
 import historytextbg from "../../assets/img/historytextbg.png";
 import wallet from "../../assets/img/wallet.png";
+
 import {
   storeBalance,
   updateBalance,
-  deleteBalance,
   getBalance
 } from "../scripts/balance";
+
+import {
+  addToHistory,
+  getHistory
+} from "../scripts/history";
 
 function generateRandomDecimal(min: number, max: number): number {
   return parseFloat((Math.random() * (max - min) + min).toFixed(2));
@@ -32,26 +37,29 @@ export default function BombDrop() {
   const [targetMultiplier, setTargetMultiplier] = useState<number>(1);
   const [displayMultiplier, setDisplayMultiplier] = useState<number>(1);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasAnimatedRef = useRef<boolean>(false);
   const [inBet, setInBet] = useState<boolean>(false);
   const [manuallyStopped, setManuallyStopped] = useState<boolean>(false);
   const [betAmount, setBetAmount] = useState<number>(0);
+  const [history, setHistory] = useState<number[]>([]);
 
-  // Balance setup
   const initBalance = () => {
-    const storedBalance = getBalance(); // Get the balance from localStorage
+    const storedBalance = getBalance();
     if (storedBalance !== null) {
-      setBalance(storedBalance); // Set the balance state to the value from localStorage
+      setBalance(storedBalance);
     } else {
-      storeBalance(0); // If no balance exists, store an initial balance of 0
-      setBalance(0); // Set the state to 0 as well
+      storeBalance(0);
+      setBalance(0);
     }
   };
 
   useEffect(() => {
-    initBalance();
+    if (typeof window !== 'undefined') {
+      initBalance();
+      setHistory(getHistory());
+    }
   }, []);
 
-  // Animate multiplier
   const animateMultiplier = () => {
     if (displayMultiplier >= targetMultiplier) return;
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -72,8 +80,14 @@ export default function BombDrop() {
         if (next >= targetMultiplier) {
           clearInterval(intervalRef.current!);
 
+          if (!hasAnimatedRef.current) {
+            hasAnimatedRef.current = true;
+            const finalValue = parseFloat(targetMultiplier.toFixed(2));
+            addToHistory(finalValue);
+            setHistory(getHistory());
+          }
+
           if (!manuallyStopped) {
-            console.log(`Auto end at: ${targetMultiplier.toFixed(2)}x`);
             setInBet(false);
           }
 
@@ -86,34 +100,54 @@ export default function BombDrop() {
   };
 
   useEffect(() => {
-    animateMultiplier();
+    if (inBet) animateMultiplier();
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [targetMultiplier]);
+  }, [targetMultiplier, inBet]);
 
-  // Start round
   const handleClick = () => {
-    if (balance !== null) {
+    if (balance !== null && betAmount > 0 && betAmount <= balance) {
       setInBet(true);
       setManuallyStopped(false);
+      hasAnimatedRef.current = false;
       const result = crashSimulation(4);
       setDisplayMultiplier(1);
       setTargetMultiplier(result);
+
       const newBalance = balance - betAmount;
-      setBalance(newBalance); // Update state
-      updateBalance(newBalance); // Update localStorage
-      console.log("User bet amount:", betAmount);
+      setBalance(newBalance);
+      updateBalance(newBalance);
     }
   };
 
-  // Stop button press
   const handleStop = () => {
-    const newBalance = balance + betAmount * parseFloat(displayMultiplier.toFixed(2));
-    console.log(`Manual stop at: ${displayMultiplier.toFixed(2)}x so you win ${betAmount} x ${displayMultiplier.toFixed(2)} = ${betAmount * parseFloat(displayMultiplier.toFixed(2))}`);
-    setBalance(newBalance); // Update state
-    updateBalance(newBalance); // Update localStorage
-    setManuallyStopped(true);
+    if (balance !== null) {
+      const winnings = betAmount * parseFloat(displayMultiplier.toFixed(2));
+      const newBalance = balance + winnings;
+      setBalance(newBalance);
+      updateBalance(newBalance);
+      setManuallyStopped(true);
+    }
+  };
+
+  const renderHistoryGrid = () => {
+    const rows = [];
+    const reversed = [...history].reverse();
+    for (let i = 0; i < reversed.length; i += 4) {
+      const row = reversed.slice(i, i + 4);
+      rows.push(
+        <div key={i} className="text-[1.2vw] text-center">
+          {row.map((value, idx) => (
+            <span key={idx}>
+              x{value.toFixed(2)}{idx < row.length - 1 ? '  ' : ' '}
+            </span>
+          ))}
+        </div>
+      );
+    }
+    return rows;
   };
 
   return (
@@ -128,9 +162,14 @@ export default function BombDrop() {
         <h1 className="absolute z-10 mb-[39vw] mr-[70vw]">
           {balance !== null ? `${balance.toFixed(2)} mdl` : '...'}
         </h1>
-        
+
         <img src={historybg} className="absolute w-[17vw] mr-[70vw] mt-[3vw] z-10" alt="History BG" />
         <img src={historytextbg} className="absolute w-[15vw] mb-[28vw] mr-[70vw] z-11" alt="History Text BG" />
+        <h1 className="absolute text-xs text-center mt-[-28vw] mr-[70vw] z-20">History</h1>
+
+        <div className="absolute z-20 mt-[-7vw] mr-[70vw] text-sm space-y-1">
+          {renderHistoryGrid()}
+        </div>
 
         <div className="absolute flex flex-col space-y-4 mt-[30vw] z-30">
           {!inBet && (
@@ -144,13 +183,13 @@ export default function BombDrop() {
 
           {inBet && manuallyStopped && (
             <button
-              className="bg-[#1884fc] hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-[15vw]"
+              className="bg-[#1884fc] text-white font-bold py-2 px-4 rounded w-[15vw]"
             >
               Waiting ...
             </button>
           )}
 
-          {inBet && !manuallyStopped &&(
+          {inBet && !manuallyStopped && (
             <button
               onClick={handleStop}
               className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-[15vw]"
@@ -164,7 +203,7 @@ export default function BombDrop() {
               type="number"
               id="number-input"
               onChange={(e) => setBetAmount(Number(e.target.value))}
-              className="bg-[#504c54] border border-gray-900 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="bg-[#504c54] border border-gray-900 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:text-white"
               placeholder="Bet amount"
               required
             />
