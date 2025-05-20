@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router";
 import {
   storeBalance,
   updateBalance,
@@ -10,7 +11,7 @@ import {
   getReward,
 } from '../scripts/reward';
 
-import balancebg from '../../assets/img/balance_bg.png';
+import banner from "../../assets/img/casinotext.png"
 import rewardbg from '../../assets/img/reward_bg.png';
 import rewardbanner from '../../assets/img/rewardbanner.png';
 import rewardcardbg from '../../assets/img/rewardcardbg.png';
@@ -21,11 +22,30 @@ import mines from '../../assets/img/mines.png';
 import find from '../../assets/img/find.png';
 import fire from '../../assets/img/fire.png';
 
+// Only animate the image content, not the container size
+const zoomStyle = `
+@keyframes zoomInOutBanner {
+  0% { transform: scale(1);}
+  50% { transform: scale(1.08);}
+  100% { transform: scale(1);}
+}
+.banner-zoom-anim {
+  animation: zoomInOutBanner 10s ease-in-out infinite;
+  will-change: transform;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+`;
+
 export function Welcome() {
   const [balance, setBalance] = useState(null);
   const [reward, setReward] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
   const [canClaim, setCanClaim] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -87,64 +107,95 @@ export function Welcome() {
 
   return (
     <main
-      className="min-h-screen w-full text-white flex relative"
+      className="min-h-screen w-screen text-white flex items-center justify-center overflow-hidden"
       style={{
         background: `
-          linear-gradient(135deg, #181c2f 0%, #232943 100%),
+          linear-gradient(135deg, #1C0C54 0%, #E040FB 50%, #1E1A91 100%),
           radial-gradient(circle at 60% 40%, rgba(255,215,0,0.08) 0, transparent 60%),
-          radial-gradient(circle at 30% 80%, rgba(0,255,255,0.06) 0, transparent 70%)
-        `,
-        backgroundBlendMode: 'overlay, lighten, normal',
-        backgroundColor: '#181c2f'
+          radial-gradient(circle at 30% 80%, rgba(255,0,128,0.08) 0, transparent 70%)
+        `
       }}
     >
-      {/* Balance Display */}
-      <div className="relative w-[10vw] mt-[2vw] ml-[3vw]">
-        <img className="w-[20vw]" src={balancebg} alt="balance background" />
-        <h1 className="absolute top-[0.5vw] left-0 right-0 text-white text-[1.3vw] font-bold text-center">
-          {balance !== null ? `${balance} mdl` : 'Loading...'}
-        </h1>
-      </div>
-
-      {/* Statistics Section */}
-      <div className="flex mt-[10vw] ml-[-10vw]">
-        <img src={statisticsbg} className="w-[10vw] h-[35vw]" alt="statistics background" />
-      </div>
-
-      {/* Reward Section */}
-      <div className="relative left-[10vw] mt-[2vw] flex">
-        <img src={rewardbg} className="h-[15vw]" alt="rewards background" />
-        <img src={rewardbanner} className="absolute w-[30vw] left-[35vw] top-[-3vw]" alt="reward banner" />
-        <img src={fire} className='absolute w-[13vw] ml-[17vw] mt-[1vw]' alt="fire effect" />
-        <h1 className="absolute mt-[10vw] ml-[20vw] text-white text-[1.5vw] font-bold">
-          Streak: {reward ? reward.level : 0}
-        </h1>
-        <img src={rewardcardbg} className="absolute w-[14vw] mt-[-1vw] ml-[3vw]" alt="reward card" />
-        <img src={rewardcradgift} className="absolute w-[7vw] mt-[2vw] ml-[6.3vw]" alt="reward gift" />
-        <button
-          className="top-[10.8vw] left-[5.6vw] absolute rounded-md bg-green-600 py-1 px-2 border border-transparent text-[0.8vw] 
-                     text-white transition-all shadow-md hover:shadow-lg focus:bg-green-700 active:bg-green-700 
-                     disabled:pointer-events-none disabled:opacity-50 ml-2"
-          type="button"
-          onClick={handleClaimReward}
-          disabled={!canClaim}
+      {/* Inject zoom animation style */}
+      <style>{zoomStyle}</style>
+      {/* Balance in the top left corner */}
+      <div className="fixed top-[1vw] left-[7vw] z-20">
+        <div
+          className="w-[9vw] h-[4vw] rounded-2xl flex flex-col items-center justify-center shadow-lg"
+          style={{
+            background: "linear-gradient(135deg, #932C91 60%, #E040FB 100%)",
+            boxShadow: "0 0 24px 0 #E040FB88",
+          }}
         >
-          {canClaim ? 'Claim Reward' : `Next ${timeLeft}`}
-        </button> 
+          <h1 className="font-lexend text-[1.2vw]">Total balance</h1>
+          <h1 className="font-roboto text-[1.1vw] mr-[3vw]">
+            {balance !== null ? `$ ${balance}` : 'Loading...'}
+          </h1>
+        </div>
       </div>
-
-      {/* Extra Game Options */}
-      <div className="absolute grid grid-cols-3 gap-15 mt-[22vw] right-[15vw]">
-        {[{ src: bombdrop, alt: 'bomb drop' }, { src: mines, alt: 'mines' }, { src: find, alt: 'find' }].map(
-          (item, index) => (
-            <div
-              key={index}
-              className="relative w-[15vw] rounded-xl overflow-hidden transform-gpu transition duration-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,255,255,0.5)]"
-            >
-              <img src={item.src} alt={item.alt} className="w-full h-auto rounded-xl transition duration-300" />
+      <div className="grid grid-cols-3 gap-2 w-full max-w-[100vw] mt-[5vw] overflow-hidden">
+        {/* Banner */}
+        <div className="col-span-2 w-[55vw] flex items-center justify-center min-h-[18vw] ml-[7vw] relative overflow-hidden rounded-[2vw]">
+          <div className="w-[60vw] h-[20vw] flex items-center justify-center relative overflow-hidden">
+            {/* Banner image with pulse effect, cropped to container */}
+            <div className="absolute w-full h-full top-0 left-0 overflow-hidden z-0">
+              <img
+                src={banner}
+                className="banner-zoom-anim"
+                alt="Casino Banner"
+              />
             </div>
-          )
-        )}
+            <h1 className='absolute text-[#D9A2FF] font-lexend font-bold text-[3vw] left-[2vw] top-[2vw] z-10'>WIN BIG</h1>
+            <h1 className='absolute text-[#D9A2FF] font-lexend font-bold text-[1.6vw] left-[2vw] top-[8vw] w-[25vw] z-10'>One lucky spin is all it takes to turn your night into a legend.</h1>
+            <button
+              className="absolute left-[5vw] bottom-[2vw] w-[10vw] h-[2vw] rounded-full bg-[#8249B4] border border-transparent text-[1.1vw] 
+                         text-[#D9A2FF] transition-all shadow-md hover:shadow-lg focus:bg-green-700 active:bg-green-700 
+                         disabled:pointer-events-none disabled:opacity-50 z-10"
+              type="button"
+            >
+              Play Now
+            </button>
+          </div>
+        </div>
+        {/* Reward */}
+        <div className="flex flex-col items-center justify-center min-h-[18vw] relative mr-[5vw]">
+          <img src={rewardbg} className="w-[28vw] h-[20vw]" alt="rewards background"/>
+          <img src={fire} className='absolute w-[2.5vw] ml-[22vw] mt-[9vw]' alt="fire effect" />
+          <h1 className="absolute ml-[17vw] w-[10vw] text-[1.6vw] font-bold font-lexend text-[#D9A2FF]">
+            Claim your daily reward  don’t let the streak burn out at  {reward ? reward.level : 0}
+          </h1>
+          <img src={rewardcardbg} className="absolute w-[16vw] mr-[10vw]" alt="reward card" />
+          <img src={rewardcradgift} className="absolute w-[8vw] mt-[-3vw] mr-[9vw] -rotate-30" alt="reward gift" />
+          <button
+            className="mt-[11vw] mr-[10vw] absolute rounded-full bg-[#8249B4] py-2 px-4 border border-transparent text-[1.1vw] 
+                       text-[#D9A2FF] transition-all shadow-md hover:shadow-lg focus:bg-green-700 active:bg-green-700 
+                       disabled:pointer-events-none disabled:opacity-50"
+            type="button"
+            onClick={handleClaimReward}
+            disabled={!canClaim}
+          >
+            {canClaim ? 'Claim Reward' : `Next ${timeLeft}`}
+          </button>
+        </div>
+        {/* Statistics */}
+        <div className="flex flex-col items-center justify-center min-h-[18vw]">
+          <img src={statisticsbg} className="w-[18.5vw] h-[21vw] mr-[0.2vw]" alt="statistics background" />
+          <h1 className="absolute mt-4 text-2xl font-bold">Statistics</h1>
+        </div>
+        {/* Games */}
+        <div className="col-span-2 flex items-center justify-center min-h-[22vw] ml-[-7vw] mr-[6vw]">
+          <div className="grid grid-cols-3 gap-[3vw] w-full">
+            <div className="flex items-center justify-center w-[28vw] h-[22vw]  overflow-hidden transform-gpu transition duration-500 hover:scale-105">
+              <img src={bombdrop} alt="bomb drop" className=" w-[25vw] h-[21vw] object-contain transition duration-300" onClick={() => navigate("/bombdrop")} />
+            </div>
+            <div className="flex items-center justify-center w-[28vw] h-[22vw] overflow-hidden transform-gpu transition duration-500 hover:scale-105">
+              <img src={mines} alt="mines" className=" w-[25vw] h-[21vw] object-contain transition duration-300" onClick={() => navigate("/mines")} />
+            </div>
+            <div className="flex items-center justify-center w-[28vw] h-[22vw] overflow-hidden transform-gpu transition duration-500 hover:scale-105">
+              <img src={find} alt="find" className=" w-[25vw] h-[21vw]  object-contain transition duration-300" onClick={() => navigate("/findthe")} />
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
