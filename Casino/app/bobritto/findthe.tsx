@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { findthebobr } from "../scripts/finthescript";
 import { getBalance, updateBalance } from "../scripts/balance";
+import { recordWin, recordLoss } from "../scripts/stats";
 import findthegamebg from "../../assets/img/findthegamebg.png";
 import findthecard from "../../assets/img/findthecard.png";
 import wallet from "../../assets/img/wallet.png";
@@ -88,6 +89,10 @@ export default function FindThe() {
     const newBalance = (balance ?? 0) + winnings;
     setBalance(newBalance);
     updateBalance(newBalance);
+
+    // Record win in local storage
+    recordWin("findthe", winnings - bet); // profit only, or use winnings for total payout
+
     setGameOver(true);
     setTimeout(() => {
       setFlipped(Array.from({ length: 9 }, () => Array(4).fill(true)));
@@ -115,6 +120,10 @@ export default function FindThe() {
     // If picked wrong (matrix value is 0), end game and lose bet
     if (matrix[rowIdx][colIdx] === 0) {
       setGameOver(true);
+
+      // Record loss in local storage
+      recordLoss("findthe", Number(betAmount));
+
       setTimeout(() => {
         setFlipped(Array.from({ length: 9 }, () => Array(4).fill(true)));
         setTimeout(resetGame, 2000);

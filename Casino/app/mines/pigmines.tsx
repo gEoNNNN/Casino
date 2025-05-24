@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { mines } from "../scripts/mines";
 import { getBalance, updateBalance } from "../scripts/balance";
+import { recordWin, recordLoss } from "../scripts/stats";
 import Pig from "../../assets/img/pig.png";
 import Wolf from "../../assets/img/wolf.png";
 import wallet from "../../assets/img/wallet.png";
@@ -45,6 +46,10 @@ export default function PigMines() {
       copy[idx] = true;
       if (cells[idx] === 1) {
         setLocked(true);
+
+        // Record loss in local storage
+        recordLoss("mines", Number(betAmount));
+
         setTimeout(() => {
           setRevealed(Array(25).fill(true));
         }, 1000);
@@ -101,9 +106,13 @@ export default function PigMines() {
     if (!locked && gameStarted && betAmount && balance !== null) {
       const bet = Number(betAmount);
       const winnings = bet * currentMultiplier;
+      const profit = winnings - bet;
       const newBalance = balance + winnings;
       setBalance(newBalance);
       updateBalance(newBalance);
+
+      // Record win in local storage
+      recordWin("mines", profit);
     }
   };
 

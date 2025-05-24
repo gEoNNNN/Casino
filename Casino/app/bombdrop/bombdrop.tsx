@@ -15,6 +15,8 @@ import {
   getHistory
 } from "../scripts/history";
 
+import { recordWin, recordLoss } from "../scripts/stats";
+
 function generateRandomDecimal(min: number, max: number): number {
   return parseFloat((Math.random() * (max - min) + min).toFixed(2));
 }
@@ -95,6 +97,9 @@ export default function BombDrop() {
           if (!manuallyStopped) {
             setCrashed(true);
             setTimeout(() => setCrashed(false), 1200); // 1.2s crash effect
+
+            // Record loss in local storage
+            recordLoss("bombdrop", betAmount);
           }
 
           return targetMultiplier;
@@ -136,12 +141,16 @@ export default function BombDrop() {
   const handleStop = () => {
     if (balance !== null) {
       const winnings = betAmount * parseFloat(displayMultiplier.toFixed(2));
+      const profit = winnings - betAmount;
       const newBalance = balance + winnings;
       setBalance(newBalance);
       updateBalance(newBalance);
       setManuallyStopped(true);
       setWon(true); // NEW: trigger win animation
       setTimeout(() => setWon(false), 1200); // NEW: remove win animation after 1.2s
+
+      // Record win in local storage
+      recordWin("bombdrop", profit);
     }
   };
 

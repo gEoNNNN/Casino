@@ -22,3 +22,27 @@ export function getBalance() {
   const balance = localStorage.getItem('balance');
   return balance ? parseFloat(JSON.parse(balance).toFixed(2)) : null; // Ensure balance has 2 decimal places when retrieved
 }
+
+const BALANCE_HISTORY_KEY = "balanceHistory";
+
+export function addBalancePoint(balance: number) {
+  const now = new Date().toISOString();
+  let history: { time: string; balance: number }[] = [];
+  try {
+    history = JSON.parse(localStorage.getItem(BALANCE_HISTORY_KEY) || "[]");
+  } catch {}
+  history.push({ time: now, balance });
+  localStorage.setItem(BALANCE_HISTORY_KEY, JSON.stringify(history));
+}
+
+export function getBalanceHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(BALANCE_HISTORY_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function resetBalanceHistory() {
+  localStorage.removeItem(BALANCE_HISTORY_KEY);
+}
