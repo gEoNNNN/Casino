@@ -59,6 +59,13 @@ export default function Statistics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#181c2f] to-[#232a3d] flex flex-col items-center justify-center">
+      {/* Back Button Bottom Right */}
+      <button
+        onClick={() => window.location.href = "/"}
+        className="fixed right-12 bottom-12 px-10 py-4 rounded-full bg-[#8249B4] text-[#D9A2FF] text-2xl font-bold shadow-md hover:shadow-lg transition border border-transparent hover:bg-[#6d399e] z-30"
+      >
+        Back
+      </button>
       <h1 className="text-4xl font-bold text-white mb-8 tracking-wide">Game Statistics</h1>
       <div className="w-full max-w-4xl mb-12 bg-[#232a3d] rounded-2xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-[#41e1a6] mb-4">Balance History</h2>
@@ -86,16 +93,16 @@ export default function Statistics() {
               </div>
               <div>
                 <span className="font-semibold">Money Won:</span>{" "}
-                <span className="text-green-300">{stats[key].moneyWon.toFixed(2)} mdl</span>
+                <span className="text-green-300">{stats[key].moneyWon.toFixed(2)} $</span>
               </div>
               <div>
                 <span className="font-semibold">Money Lost:</span>{" "}
-                <span className="text-red-300">{stats[key].moneyLost.toFixed(2)} mdl</span>
+                <span className="text-red-300">{stats[key].moneyLost.toFixed(2)} $</span>
               </div>
               <div>
                 <span className="font-semibold">Net Profit:</span>{" "}
                 <span className={stats[key].moneyWon - stats[key].moneyLost >= 0 ? "text-green-400" : "text-red-400"}>
-                  {(stats[key].moneyWon - stats[key].moneyLost).toFixed(2)} mdl
+                  {(stats[key].moneyWon - stats[key].moneyLost).toFixed(2)} $
                 </span>
               </div>
             </div>

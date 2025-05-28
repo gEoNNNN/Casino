@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { findthebobr } from "../scripts/finthescript";
 import { getBalance, updateBalance } from "../scripts/balance";
-import { recordWin, recordLoss } from "../scripts/stats";
 import findthegamebg from "../../assets/img/findthegamebg.png";
 import findthecard from "../../assets/img/findthecard.png";
 import wallet from "../../assets/img/wallet.png";
@@ -10,8 +10,8 @@ export default function FindThe() {
   // Balance and bet
   const [balance, setBalance] = useState<number | null>(0);
   const [betAmount, setBetAmount] = useState<string>("");
-  const [gameStarted, setGameStarted] = useState(false);
-
+  const [gameStarted, setGameStarted] = useState(false); 
+  const navigate = useNavigate();
   // Level: 1 = easy, 2 = medium, 3 = expert
   const [level, setLevel] = useState<number>(1);
 
@@ -89,10 +89,6 @@ export default function FindThe() {
     const newBalance = (balance ?? 0) + winnings;
     setBalance(newBalance);
     updateBalance(newBalance);
-
-    // Record win in local storage
-    recordWin("findthe", winnings - bet); // profit only, or use winnings for total payout
-
     setGameOver(true);
     setTimeout(() => {
       setFlipped(Array.from({ length: 9 }, () => Array(4).fill(true)));
@@ -120,10 +116,6 @@ export default function FindThe() {
     // If picked wrong (matrix value is 0), end game and lose bet
     if (matrix[rowIdx][colIdx] === 0) {
       setGameOver(true);
-
-      // Record loss in local storage
-      recordLoss("findthe", Number(betAmount));
-
       setTimeout(() => {
         setFlipped(Array.from({ length: 9 }, () => Array(4).fill(true)));
         setTimeout(resetGame, 2000);
@@ -148,80 +140,88 @@ export default function FindThe() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#181c2f] relative">
       {/* Balance on top left */}
-      <div className="flex items-center mb-8 w-full max-w-[92.9vw] justify-start relative z-20">
-        <div className="flex items-center ml-8">
-          <img src={wallet} className="w-[3vw] mr-2" alt="Wallet" />
-          <span className="text-white text-[1.5vw] font-bold">
-            {balance !== null ? `${balance.toFixed(2)} mdl` : "..."}
+      <div className="absolute top-[7vw] left-[3vw] flex items-center gap-4 z-20">
+        <div className="flex items-center px-6 py-3 rounded-2xl shadow-lg bg-gradient-to-r from-[#232a3d] to-[#2e3650] border border-[#41e1a6]">
+          <span className="text-white text-xl font-bold font-lexend tracking-wide">
+            {balance !== null ? `${balance.toFixed(2)} $` : "..."}
           </span>
         </div>
       </div>
 
       {/* Level selector, Bet Input and Bet/Withdraw Button centered */}
-      <div className="absolute ml-[-75vw] flex flex-col items-center justify-center mt-[15vw] z-20">
-        {/* Level selector */}
-        <div className="mb-4">
-          <label className="text-white mr-2 font-bold">Level:</label>
-          <select
-            className="rounded-lg px-4 py-2 bg-[#504c54] text-white"
-            value={level}
-            onChange={e => setLevel(Number(e.target.value))}
-            disabled={gameStarted}
-          >
-            <option value={1}>Easy (1 wrong, 3 correct)</option>
-            <option value={2}>Medium (2 wrong, 2 correct)</option>
-            <option value={3}>Expert (3 wrong, 1 correct)</option>
-          </select>
-        </div>
-        <form className="w-[15vw] mb-4" onSubmit={e => e.preventDefault()}>
-          <input
-            type="number"
-            min={0}
-            value={betAmount}
-            onChange={e => setBetAmount(e.target.value)}
-            className="bg-[#504c54] border border-gray-900 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:text-white text-center"
-            placeholder="Bet amount"
-            required
-            disabled={gameStarted}
-          />
-        </form>
-        {!gameStarted ? (
-          <button
-            className={`px-8 py-2 rounded-lg font-bold text-white transition ${
-              !betAmount || Number(betAmount) <= 0 || Number(betAmount) > (balance ?? 0) || gameStarted
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-            disabled={
-              !betAmount ||
-              Number(betAmount) <= 0 ||
-              Number(betAmount) > (balance ?? 0) ||
-              gameStarted
-            }
-            onClick={handleBet}
-          >
-            Bet
-          </button>
-        ) : (
-          <button
-            className={`px-8 py-2 rounded-lg font-bold text-white transition ${
-              gameOver
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-yellow-500 hover:bg-yellow-600"
-            }`}
-            disabled={gameOver}
-            onClick={handleWithdraw}
-          >
-            Withdraw
-          </button>
-        )}
-        {/* Multiplier display */}
-        <div className="flex gap-8 mt-6">
-          <div className="text-white text-lg">
-            Previous Multiplier: <span className="font-bold">{currentMultiplier.toFixed(3)}x</span>
+      <div className="absolute left-12 top-[15vw] z-20">
+        <div className="bg-[#232a3d] rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center gap-6 w-[22vw] border-2 border-[#41e1a6]">
+          {/* Level selector */}
+          <div className="w-full flex flex-col items-start mb-2">
+            <label className="text-white font-bold mb-1 text-lg">Difficulty</label>
+            <select
+              className="rounded-lg px-4 py-2 bg-[#504c54] text-white w-full focus:ring-2 focus:ring-[#41e1a6] transition"
+              value={level}
+              onChange={e => setLevel(Number(e.target.value))}
+              disabled={gameStarted}
+            >
+              <option value={1}>Easy (1 wrong, 3 correct)</option>
+              <option value={2}>Medium (2 wrong, 2 correct)</option>
+              <option value={3}>Expert (3 wrong, 1 correct)</option>
+            </select>
           </div>
-          <div className="text-white text-lg">
-            Next Multiplier: <span className="font-bold">{nextMultiplier ? nextMultiplier.toFixed(3) : "-"}x</span>
+          {/* Bet input */}
+          <form className="w-full" onSubmit={e => e.preventDefault()}>
+            <label className="text-white font-bold mb-1 text-lg">Bet Amount</label>
+            <input
+              type="number"
+              min={0}
+              value={betAmount}
+              onChange={e => setBetAmount(e.target.value)}
+              className="bg-[#504c54] border border-[#41e1a6] text-white text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#41e1a6] transition"
+              placeholder="Enter bet"
+              required
+              disabled={gameStarted}
+            />
+          </form>
+          {/* Bet/Withdraw Button */}
+          <div className="w-full flex flex-col items-center mt-2">
+            {!gameStarted ? (
+              <button
+                className={`w-full py-3 rounded-lg font-bold text-lg transition ${
+                  !betAmount || Number(betAmount) <= 0 || Number(betAmount) > (balance ?? 0) || gameStarted
+                    ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                    : "bg-[#41e1a6] hover:bg-green-600 text-[#181c2f]"
+                }`}
+                disabled={
+                  !betAmount ||
+                  Number(betAmount) <= 0 ||
+                  Number(betAmount) > (balance ?? 0) ||
+                  gameStarted
+                }
+                onClick={handleBet}
+              >
+                Bet
+              </button>
+            ) : (
+              <button
+                className={`w-full py-3 rounded-lg font-bold text-lg transition ${
+                  gameOver
+                    ? "bg-gray-500 text-gray-300 cursor-not-allowed"
+                    : "bg-yellow-400 hover:bg-yellow-500 text-[#181c2f]"
+                }`}
+                disabled={gameOver}
+                onClick={handleWithdraw}
+              >
+                Withdraw
+              </button>
+            )}
+          </div>
+          {/* Multiplier display */}
+          <div className="flex flex-col gap-1 w-full mt-4">
+            <div className="flex justify-between">
+              <span className="text-white text-base">Current Multiplier:</span>
+              <span className="font-bold text-[#41e1a6]">{currentMultiplier.toFixed(3)}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white text-base">Next Multiplier:</span>
+              <span className="font-bold text-yellow-300">{nextMultiplier ? nextMultiplier.toFixed(3) : "-"}x</span>
+            </div>
           </div>
         </div>
       </div>
@@ -235,10 +235,17 @@ export default function FindThe() {
           draggable={false}
         />
       </div>
+      {/* Back Button Bottom Right */}
+      <button
+        onClick={() => navigate("/")}
+        className="fixed right-12 bottom-12 px-10 py-4 rounded-full bg-[#8249B4] text-[#D9A2FF] text-2xl font-bold shadow-md hover:shadow-lg transition border border-transparent hover:bg-[#6d399e] z-30"
+      >
+        Back
+      </button>
 
       {/* Cards grid on top */}
       <div
-        className="relative flex items-center justify-center z-10 top-[0.4vw]"
+        className="relative flex items-center justify-center z-10 top-[2.6vw]"
         style={{ width: "calc(4 * 6vw + 3 * 0.25rem)", height: "calc(9 * 3vw + 8 * 0.25rem)" }}
       >
         <div className="grid grid-cols-4 gap-2 w-full h-full">

@@ -59,22 +59,23 @@ export default function PigMines() {
   };
 
   const handleMultiplaier = (bombs: number, curentMultiplaier: number) => {
-    const totalCells = 25;
-    const totalBombs = bombs;
-    const totalSafeCells = totalCells - totalBombs;
-    if (curentMultiplaier < 2) {
-      return curentMultiplaier * (totalCells / totalSafeCells);
-    }
-    if (curentMultiplaier > 2) {
-      return curentMultiplaier * (totalCells / totalSafeCells + 0.1);
-    }
-    if (curentMultiplaier > 5) {
-      return curentMultiplaier * (totalCells / totalSafeCells + 0.2);
-    }
-    if (curentMultiplaier > 10) {
-      return curentMultiplaier * (totalCells / totalSafeCells + 0.3);
-    }
-  };
+  const totalCells = 25;
+  const totalBombs = bombs;
+  const totalSafeCells = totalCells - totalBombs;
+  if (curentMultiplaier < 2) {
+    return curentMultiplaier * (totalCells / totalSafeCells);
+  }
+  if (curentMultiplaier > 2) {
+    return curentMultiplaier * (totalCells / totalSafeCells + 0.1);
+  }
+  if (curentMultiplaier > 5) {
+    return curentMultiplaier * (totalCells / totalSafeCells + 0.2);
+  }
+  if (curentMultiplaier > 10) {
+    return curentMultiplaier * (totalCells / totalSafeCells + 0.3);
+  }
+  return curentMultiplaier;
+};
 
   const bombsNumber = Math.max(1, Math.min(24, Number(bombs) || 1));
   const correctRevealed = revealed.filter((r, idx) => r && cells[idx] === 0).length;
@@ -119,27 +120,27 @@ export default function PigMines() {
   // Casino-style UI
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#181c2f] to-[#222B4C] flex items-stretch justify-center relative">
-      {/* Balance Top Right */}
-      <div className="absolute top-6 right-12 flex items-center gap-2 z-20">
-        <img src={wallet} className="w-8 h-8" alt="Wallet" />
-        <span className="text-white text-xl font-bold">
-          {balance !== null ? `${balance.toFixed(2)} mdl` : '...'}
-        </span>
-        <button
-          onClick={() => {
-            const newBalance = (balance ?? 0) + 1000;
-            setBalance(newBalance);
-            updateBalance(newBalance);
-          }}
-          className="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow transition"
+      {/* Balance Top Left */}
+      <div className="absolute top-[3vw] left-[8vw] flex items-center gap-4 z-20">
+        <div
+          className="flex items-center px-6 py-3 rounded-2xl shadow-lg bg-gradient-to-r from-[#232a3d] to-[#2e3650] border border-[#41e1a6]"
         >
-          +1000
-        </button>
+          <span className="text-white text-xl font-bold font-lexend tracking-wide">
+            {balance !== null ? `${balance.toFixed(2)} $` : '...'}
+          </span>
+        </div>
       </div>
+      {/* Back Button Bottom Right */}
+      <button
+        onClick={() => window.location.href = "/"}
+        className="fixed right-12 bottom-12 px-10 py-4 rounded-full bg-[#8249B4] text-[#D9A2FF] text-2xl font-bold shadow-md hover:shadow-lg transition border border-transparent hover:bg-[#6d399e] z-30"
+      >
+        Back
+      </button>
       {/* Main Layout */}
       <div className="flex w-full max-w-[1800px] mx-auto ml-[8vw] mt-[10vw]" style={{ minHeight: "80vh" }}>
         {/* Left: Bet Controls */}
-        <div className="flex flex-col items-center justify-start mt-[3vw] w-[20vw]">
+        <div className="flex flex-col items-center justify-start w-[20vw] mt-[4vw]">
           {/* Bet Controls Card */}
           <div className="flex flex-col items-center gap-4 bg-[#232a3d] rounded-2xl shadow-lg px-10 py-8 w-full max-w-[400px]">
             <form className="flex flex-col items-center gap-2 w-full" onSubmit={e => e.preventDefault()}>

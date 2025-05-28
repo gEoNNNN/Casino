@@ -152,6 +152,7 @@ export function Welcome() {
                          text-[#D9A2FF] transition-all shadow-md hover:shadow-lg focus:bg-green-700 active:bg-green-700 
                          disabled:pointer-events-none disabled:opacity-50 z-10"
               type="button"
+              onClick={() => navigate("/mines")}
             >
               Play Now
             </button>
@@ -178,9 +179,15 @@ export function Welcome() {
           </button>
         </div>
         {/* Statistics */}
-        <div className="flex flex-col items-center justify-center min-h-[18vw]">
-          <img src={statisticsbg} className="w-[18.5vw] h-[21vw] mr-[0.2vw]" alt="statistics background" />
-          <h1 className="absolute mt-4 text-2xl font-bold">Statistics</h1>
+        <div className="flex items-center justify-center w-[28vw] h-[22vw] overflow-hidden transform-gpu transition duration-500 hover:scale-105">
+              <img src={statisticsbg} alt="mines" className=" w-[25vw] h-[21vw] object-contain transition duration-300" onClick={() => navigate("/statistics")} />
+          <button
+            className="w-[10vw] mb-[0.5vw] px-8 py-2 rounded-full bg-[#8249B4] border border-transparent text-[1.1vw] text-[#D9A2FF] transition-all shadow-md hover:shadow-lg focus:bg-green-700 active:bg-green-700 disabled:pointer-events-none disabled:opacity-50 absolute bottom-[2vw] left-1/2 -translate-x-1/2 z-10"
+            type="button"
+            onClick={() => navigate("/statistics")}
+          >
+            View
+          </button>
         </div>
         {/* Games */}
         <div className="col-span-2 flex items-center justify-center min-h-[22vw] ml-[-7vw] mr-[6vw]">
