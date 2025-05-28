@@ -45,6 +45,12 @@ export function Welcome() {
   const [reward, setReward] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
   const [canClaim, setCanClaim] = useState(true);
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return true;
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,17 +111,44 @@ export function Welcome() {
     updateClaimStatus(r);
   };
 
+  // Toggle dark mode class on <html>
+  const toggleDarkMode = () => {
+    setDark((prev) => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      return next;
+    });
+  };
+
   return (
     <main
-      className="min-h-screen w-screen text-white flex items-center justify-center overflow-hidden"
+      className="min-h-screen w-screen text-white flex items-center justify-center overflow-hidden transition-colors duration-300"
       style={{
-        background: `
+        background: dark
+          ? `
           linear-gradient(135deg, #1C0C54 0%, #E040FB 50%, #1E1A91 100%),
           radial-gradient(circle at 60% 40%, rgba(255,215,0,0.08) 0, transparent 60%),
           radial-gradient(circle at 30% 80%, rgba(255,0,128,0.08) 0, transparent 70%)
         `
+          : `
+          linear-gradient(135deg, #60a5fa 0%, #e0e7ef 40%, #d1c1f7 70%, #bbf7d0 100%),
+          radial-gradient(circle at 60% 40%, rgba(96,165,250,0.18) 0, transparent 60%),
+          radial-gradient(circle at 30% 80%, rgba(168, 85, 247, 0.12) 0, transparent 70%)
+        `
       }}
     >
+      {/* Dark/Light mode toggle button */}
+      <button
+        className="fixed top-8 right-12 z-50 px-6 py-2 rounded-full bg-[#e0e7ef]/80 dark:bg-[#232a3d] text-[#232a3d] dark:text-white font-bold shadow hover:bg-blue-100 dark:hover:bg-[#181c2f] transition"
+        onClick={toggleDarkMode}
+        type="button"
+      >
+        {dark ? "Light Mode" : "Dark Mode"}
+      </button>
       {/* Inject zoom animation style */}
       <style>{zoomStyle}</style>
       {/* Balance in the top left corner */}

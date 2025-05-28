@@ -22,6 +22,20 @@ export default function FindThe() {
   const [currentRow, setCurrentRow] = useState(8); // Start from the bottom (row 8)
   const [gameOver, setGameOver] = useState(false);
 
+  // Sync with dark mode from <html> (for Welcome page button sync)
+  const [dark, setDark] = useState(() =>
+    typeof window !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : true
+  );
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setBalance(getBalance());
@@ -138,11 +152,31 @@ export default function FindThe() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#181c2f] relative">
+    <div
+      className={`flex flex-col items-center justify-center min-h-screen relative transition-colors duration-300`}
+      style={{
+        background: dark
+          ? `
+            linear-gradient(135deg, #181c2f 0%, #8249B4 60%, #462320 100%),
+            radial-gradient(circle at 60% 40%, rgba(255,215,0,0.08) 0, transparent 60%),
+            radial-gradient(circle at 30% 80%, rgba(255,0,128,0.08) 0, transparent 70%)
+          `
+          : `
+            linear-gradient(135deg, #bbf7d0 0%, #60a5fa 40%, #e0e7ef 70%, #d1c1f7 100%),
+            radial-gradient(circle at 60% 40%, rgba(96,165,250,0.18) 0, transparent 60%),
+            radial-gradient(circle at 30% 80%, rgba(168,85,247,0.12) 0, transparent 70%)
+          `
+      }}
+    >
       {/* Balance on top left */}
       <div className="absolute top-[7vw] left-[3vw] flex items-center gap-4 z-20">
-        <div className="flex items-center px-6 py-3 rounded-2xl shadow-lg bg-gradient-to-r from-[#232a3d] to-[#2e3650] border border-[#41e1a6]">
-          <span className="text-white text-xl font-bold font-lexend tracking-wide">
+        <div className={`flex items-center px-6 py-3 rounded-2xl shadow-lg border border-[#41e1a6] 
+          ${dark
+            ? "bg-gradient-to-r from-[#232a3d] to-[#2e3650]"
+            : "bg-gradient-to-r from-[#e0e7ef] to-[#bbf7d0]"}`
+        }>
+          <span className={`text-xl font-bold font-lexend tracking-wide
+            ${dark ? "text-white" : "text-gray-900"}`}>
             {balance !== null ? `${balance.toFixed(2)} $` : "..."}
           </span>
         </div>
@@ -150,12 +184,14 @@ export default function FindThe() {
 
       {/* Level selector, Bet Input and Bet/Withdraw Button centered */}
       <div className="absolute left-12 top-[15vw] z-20">
-        <div className="bg-[#232a3d] rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center gap-6 w-[22vw] border-2 border-[#41e1a6]">
+        <div className={`rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center gap-6 w-[22vw] border-2 border-[#41e1a6]
+          ${dark ? "bg-[#232a3d]" : "bg-white"}`}>
           {/* Level selector */}
           <div className="w-full flex flex-col items-start mb-2">
-            <label className="text-white font-bold mb-1 text-lg">Difficulty</label>
+            <label className={`font-bold mb-1 text-lg ${dark ? "text-white" : "text-gray-900"}`}>Difficulty</label>
             <select
-              className="rounded-lg px-4 py-2 bg-[#504c54] text-white w-full focus:ring-2 focus:ring-[#41e1a6] transition"
+              className={`rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-[#41e1a6] transition
+                ${dark ? "bg-[#504c54] text-white" : "bg-[#e0e7ef] text-gray-900"}`}
               value={level}
               onChange={e => setLevel(Number(e.target.value))}
               disabled={gameStarted}
@@ -167,13 +203,16 @@ export default function FindThe() {
           </div>
           {/* Bet input */}
           <form className="w-full" onSubmit={e => e.preventDefault()}>
-            <label className="text-white font-bold mb-1 text-lg">Bet Amount</label>
+            <label className={`font-bold mb-1 text-lg ${dark ? "text-white" : "text-gray-900"}`}>Bet Amount</label>
             <input
               type="number"
               min={0}
               value={betAmount}
               onChange={e => setBetAmount(e.target.value)}
-              className="bg-[#504c54] border border-[#41e1a6] text-white text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#41e1a6] transition"
+              className={`border text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#41e1a6] transition
+                ${dark
+                  ? "bg-[#504c54] border-[#41e1a6] text-white"
+                  : "bg-[#e0e7ef] border-[#41e1a6] text-gray-900"}`}
               placeholder="Enter bet"
               required
               disabled={gameStarted}
@@ -215,11 +254,11 @@ export default function FindThe() {
           {/* Multiplier display */}
           <div className="flex flex-col gap-1 w-full mt-4">
             <div className="flex justify-between">
-              <span className="text-white text-base">Current Multiplier:</span>
+              <span className={`${dark ? "text-white" : "text-gray-900"} text-base`}>Current Multiplier:</span>
               <span className="font-bold text-[#41e1a6]">{currentMultiplier.toFixed(3)}x</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-white text-base">Next Multiplier:</span>
+              <span className={`${dark ? "text-white" : "text-gray-900"} text-base`}>Next Multiplier:</span>
               <span className="font-bold text-yellow-300">{nextMultiplier ? nextMultiplier.toFixed(3) : "-"}x</span>
             </div>
           </div>
@@ -227,11 +266,11 @@ export default function FindThe() {
       </div>
 
       {/* Background image centered on the page */}
-      <div className="absolute flex items-center justify-center z-0 w-full h-full">
+      <div className="absolute flex items-center justify-center z-0 w-full h-full pointer-events-none">
         <img
           src={findthegamebg}
           alt="Game Background"
-          className="w-[33vw] opacity-60"
+          className={`w-[33vw] opacity-100 ${dark ? "" : "brightness-90"}`}
           draggable={false}
         />
       </div>

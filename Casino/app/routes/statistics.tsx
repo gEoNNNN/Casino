@@ -27,6 +27,20 @@ export default function Statistics() {
   );
   const [balanceHistory, setBalanceHistory] = React.useState(getBalanceHistory());
 
+  // Sync with <html> dark mode class
+  const [dark, setDark] = React.useState(() =>
+    typeof window !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : true
+  );
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   // Add this effect to keep balanceHistory up to date
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -58,7 +72,12 @@ export default function Statistics() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#181c2f] to-[#232a3d] flex flex-col items-center justify-center">
+    <div className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-300
+      bg-gradient-to-br ${dark
+        ? "from-[#181c2f] to-[#232a3d]"
+        : "from-[#e0e7ef] to-[#bbf7d0]"}
+    `}
+    >
       {/* Back Button Bottom Right */}
       <button
         onClick={() => window.location.href = "/"}
@@ -66,42 +85,42 @@ export default function Statistics() {
       >
         Back
       </button>
-      <h1 className="text-4xl font-bold text-white mb-8 tracking-wide">Game Statistics</h1>
-      <div className="w-full max-w-4xl mb-12 bg-[#232a3d] rounded-2xl shadow-lg p-8">
+      <h1 className={`text-4xl font-bold mb-8 tracking-wide ${dark ? "text-white" : "text-gray-900"}`}>Game Statistics</h1>
+      <div className={`w-full max-w-4xl mb-12 rounded-2xl shadow-lg p-8 ${dark ? "bg-[#232a3d]" : "bg-white"}`}>
         <h2 className="text-2xl font-bold text-[#41e1a6] mb-4">Balance History</h2>
         {balanceHistory.length > 1 ? (
           <Line data={chartData} />
         ) : (
-          <div className="text-white">No balance history yet.</div>
+          <div className={`${dark ? "text-white" : "text-gray-800"}`}>No balance history yet.</div>
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
         {GAME_NAMES.map(({ key, label }) => (
           <div
             key={key}
-            className="bg-[#232a3d] rounded-2xl shadow-lg p-8 flex flex-col items-center border-2 border-[#41e1a6] hover:scale-105 transition"
+            className={`rounded-2xl shadow-lg p-8 flex flex-col items-center border-2 border-[#41e1a6] hover:scale-105 transition ${dark ? "bg-[#232a3d]" : "bg-white"}`}
           >
             <h2 className="text-2xl font-bold text-[#41e1a6] mb-4">{label}</h2>
-            <div className="text-white text-lg space-y-2">
+            <div className={`text-lg space-y-2 ${dark ? "text-white" : "text-gray-800"}`}>
               <div>
                 <span className="font-semibold">Wins:</span>{" "}
-                <span className="text-green-400">{stats[key].wins}</span>
+                <span className="text-green-500">{stats[key].wins}</span>
               </div>
               <div>
                 <span className="font-semibold">Losses:</span>{" "}
-                <span className="text-red-400">{stats[key].losses}</span>
+                <span className="text-red-500">{stats[key].losses}</span>
               </div>
               <div>
                 <span className="font-semibold">Money Won:</span>{" "}
-                <span className="text-green-300">{stats[key].moneyWon.toFixed(2)} $</span>
+                <span className="text-green-400">{stats[key].moneyWon.toFixed(2)} $</span>
               </div>
               <div>
                 <span className="font-semibold">Money Lost:</span>{" "}
-                <span className="text-red-300">{stats[key].moneyLost.toFixed(2)} $</span>
+                <span className="text-red-400">{stats[key].moneyLost.toFixed(2)} $</span>
               </div>
               <div>
                 <span className="font-semibold">Net Profit:</span>{" "}
-                <span className={stats[key].moneyWon - stats[key].moneyLost >= 0 ? "text-green-400" : "text-red-400"}>
+                <span className={stats[key].moneyWon - stats[key].moneyLost >= 0 ? "text-green-500" : "text-red-500"}>
                   {(stats[key].moneyWon - stats[key].moneyLost).toFixed(2)} $
                 </span>
               </div>

@@ -47,6 +47,11 @@ export default function BombDrop() {
   const [history, setHistory] = useState<number[]>([]);
   const [crashed, setCrashed] = useState<boolean>(false);
   const [won, setWon] = useState<boolean>(false); // NEW: win animation state
+  const [dark, setDark] = useState(() =>
+    typeof window !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : true
+  );
   const navigate = useNavigate();
 
   const initBalance = () => {
@@ -175,8 +180,20 @@ export default function BombDrop() {
     // eslint-disable-next-line
   }, [displayMultiplier, inBet, manuallyStopped]);
 
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#181c2f] to-[#222B4C] flex items-stretch justify-center relative">
+    <div className={`min-h-screen flex items-stretch justify-center relative transition-colors duration-300
+      ${dark
+        ? "bg-gradient-to-b from-[#181c2f] to-[#222B4C]"
+        : "bg-gradient-to-br from-[#e0e7ef] to-[#bbf7d0]"}
+    `}>
       {/* Crash animation overlay */}
       {crashed && (
         <div
@@ -236,9 +253,14 @@ export default function BombDrop() {
       {/* Balance Top Left */}
       <div className="absolute top-[6vw] left-[8vw] flex items-center gap-4 z-20">
         <div
-          className="flex items-center px-6 py-3 rounded-2xl shadow-lg bg-gradient-to-r from-[#232a3d] to-[#2e3650] border border-[#41e1a6]"
+          className={`flex items-center px-6 py-3 rounded-2xl shadow-lg border border-[#41e1a6]
+            ${dark
+              ? "bg-gradient-to-r from-[#232a3d] to-[#2e3650]"
+              : "bg-gradient-to-r from-[#e0e7ef] to-[#bbf7d0]"}`
+          }
         >
-          <span className="text-white text-xl font-bold font-lexend tracking-wide">
+          <span className={`text-xl font-bold font-lexend tracking-wide
+            ${dark ? "text-white" : "text-gray-900"}`}>
             {balance !== null ? `${balance.toFixed(2)} $` : '...'}
           </span>
         </div>
@@ -255,19 +277,25 @@ export default function BombDrop() {
         {/* Left: History + Bet Controls (30%) */}
         <div className="flex flex-col items-center justify-start mt-[14vw] w-[20vw]">
           {/* History */}
-          <div className="w-full bg-[#232a3d] rounded-2xl shadow-lg px-6 py-6 flex flex-col items-center mb-8">
-            <span className="text-gray-400 text-lg mb-4 font-bold tracking-widest uppercase">History</span>
+          <div className={`w-full rounded-2xl shadow-lg px-6 py-6 flex flex-col items-center mb-8
+            ${dark ? "bg-[#232a3d]" : "bg-white"}`}>
+            <span className={`text-lg mb-4 font-bold tracking-widest uppercase
+              ${dark ? "text-gray-400" : "text-gray-800"}`}>History</span>
             <div className="flex flex-wrap gap-3 justify-center">
               {history.slice(-18).reverse().map((value, idx) => (
                 <span
                   key={idx}
-                  className={`font-bold text-lg ${
-                    value >= 2
-                      ? "text-green-400"
-                      : value >= 1.5
-                      ? "text-yellow-300"
-                      : "text-red-400"
-                  }`}
+                  className={`font-bold text-lg rounded px-2 py-1 transition
+                    ${
+                      value >= 2
+                        ? "text-green-500"
+                        : value >= 1.5
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }
+                    ${idx > 5 ? "opacity-60 grayscale" : ""}
+                    ${dark ? "bg-[#232a3d]/60" : "bg-[#e0e7ef]/60"}
+                  `}
                 >
                   x{value.toFixed(2)}
                 </span>
@@ -275,7 +303,10 @@ export default function BombDrop() {
             </div>
           </div>
           {/* Bet Controls */}
-          <div className="flex flex-col items-center gap-4 bg-[#232a3d] rounded-2xl shadow-lg px-10 py-8 w-full max-w-[400px] mt-8">
+          <div className={`flex flex-col items-center gap-4 rounded-2xl shadow-lg px-10 py-8 w-full max-w-[400px] mt-8 border-2 border-[#41e1a6]
+            ${dark ? "bg-[#232a3d]" : "bg-white"}
+            ${!inBet && betAmount <= 0 ? "opacity-70 grayscale" : ""}
+          `}>
             <form
               className="flex flex-col items-center gap-2 w-full"
               onSubmit={e => e.preventDefault()}
@@ -285,7 +316,12 @@ export default function BombDrop() {
                 min={1}
                 value={betAmount === 0 ? "" : betAmount}
                 onChange={e => setBetAmount(Number(e.target.value))}
-                className="bg-[#181c2f] border border-[#3a415a] text-white text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#1884fc] transition"
+                className={`border text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#1884fc] transition
+                  ${dark
+                    ? "bg-[#181c2f] border-[#3a415a] text-white"
+                    : "bg-[#e0e7ef] border-[#41e1a6] text-gray-900 font-bold"}
+                  ${inBet ? "opacity-60 grayscale" : ""}
+                `}
                 placeholder="Enter bet amount"
                 disabled={inBet}
               />
@@ -296,7 +332,7 @@ export default function BombDrop() {
                 className={`w-full py-3 rounded-lg font-bold text-lg transition ${
                   betAmount > 0 && betAmount <= (balance ?? 0)
                     ? "bg-[#1884fc] hover:bg-blue-600 text-white"
-                    : "bg-gray-500 text-gray-300 cursor-not-allowed"
+                    : "bg-gray-500 text-gray-300 cursor-not-allowed opacity-70 grayscale"
                 }`}
                 disabled={betAmount <= 0 || betAmount > (balance ?? 0)}
               >
@@ -304,7 +340,7 @@ export default function BombDrop() {
               </button>
             ) : manuallyStopped ? (
               <button
-                className="w-full py-3 rounded-lg font-bold text-lg bg-gray-500 text-gray-300 cursor-not-allowed"
+                className="w-full py-3 rounded-lg font-bold text-lg bg-gray-500 text-gray-300 cursor-not-allowed opacity-70 grayscale"
                 disabled
               >
                 Waiting...
@@ -350,16 +386,19 @@ export default function BombDrop() {
           </div>
           {/* Multiplier */}
           <div className="flex flex-col items-center mt-2 mb-6">
-            <span className="text-gray-400 text-lg tracking-widest uppercase mb-2">Current Multiplier</span>
+            <span className={`text-lg tracking-widest uppercase mb-2
+              ${dark ? "text-gray-400" : "text-gray-800 font-bold"}`}>Current Multiplier</span>
             <span
               className={`text-[6vw] md:text-[3vw] font-extrabold transition-all duration-200 ${
                 inBet && !manuallyStopped
-                  ? "text-green-400 animate-pulse"
+                  ? "text-green-500 animate-pulse"
                   : crashed
-                  ? "text-red-500 animate-crash-shake"
+                  ? "text-red-600 animate-crash-shake"
                   : won
-                  ? "text-green-400 animate-win-shake"
-                  : "text-white"
+                  ? "text-green-500 animate-win-shake"
+                  : dark
+                  ? "text-white"
+                  : "text-gray-900"
               }`}
               style={{ fontFamily: "Lexend, sans-serif" }}
             >

@@ -15,6 +15,20 @@ export default function PigMines() {
   const [bombs, setBombs] = useState<string>("");
   const [gameStarted, setGameStarted] = useState(false);
 
+  // Dark mode sync
+  const [dark, setDark] = useState(() =>
+    typeof window !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : true
+  );
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     const bombsNumber = Math.max(1, Math.min(24, Number(bombs) || 1));
     setCells(mines(bombsNumber));
@@ -59,23 +73,23 @@ export default function PigMines() {
   };
 
   const handleMultiplaier = (bombs: number, curentMultiplaier: number) => {
-  const totalCells = 25;
-  const totalBombs = bombs;
-  const totalSafeCells = totalCells - totalBombs;
-  if (curentMultiplaier < 2) {
-    return curentMultiplaier * (totalCells / totalSafeCells);
-  }
-  if (curentMultiplaier > 2) {
-    return curentMultiplaier * (totalCells / totalSafeCells + 0.1);
-  }
-  if (curentMultiplaier > 5) {
-    return curentMultiplaier * (totalCells / totalSafeCells + 0.2);
-  }
-  if (curentMultiplaier > 10) {
-    return curentMultiplaier * (totalCells / totalSafeCells + 0.3);
-  }
-  return curentMultiplaier;
-};
+    const totalCells = 25;
+    const totalBombs = bombs;
+    const totalSafeCells = totalCells - totalBombs;
+    if (curentMultiplaier < 2) {
+      return curentMultiplaier * (totalCells / totalSafeCells);
+    }
+    if (curentMultiplaier > 2) {
+      return curentMultiplaier * (totalCells / totalSafeCells + 0.1);
+    }
+    if (curentMultiplaier > 5) {
+      return curentMultiplaier * (totalCells / totalSafeCells + 0.2);
+    }
+    if (curentMultiplaier > 10) {
+      return curentMultiplaier * (totalCells / totalSafeCells + 0.3);
+    }
+    return curentMultiplaier;
+  };
 
   const bombsNumber = Math.max(1, Math.min(24, Number(bombs) || 1));
   const correctRevealed = revealed.filter((r, idx) => r && cells[idx] === 0).length;
@@ -119,13 +133,22 @@ export default function PigMines() {
 
   // Casino-style UI
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#181c2f] to-[#222B4C] flex items-stretch justify-center relative">
+    <div className={`min-h-screen flex items-stretch justify-center relative transition-colors duration-300
+      ${dark
+        ? "bg-gradient-to-b from-[#181c2f] to-[#222B4C]"
+        : "bg-gradient-to-br from-[#e0e7ef] to-[#bbf7d0]"}
+    `}>
       {/* Balance Top Left */}
       <div className="absolute top-[3vw] left-[8vw] flex items-center gap-4 z-20">
         <div
-          className="flex items-center px-6 py-3 rounded-2xl shadow-lg bg-gradient-to-r from-[#232a3d] to-[#2e3650] border border-[#41e1a6]"
+          className={`flex items-center px-6 py-3 rounded-2xl shadow-lg border border-[#41e1a6]
+            ${dark
+              ? "bg-gradient-to-r from-[#232a3d] to-[#2e3650]"
+              : "bg-gradient-to-r from-[#e0e7ef] to-[#bbf7d0]"}`
+          }
         >
-          <span className="text-white text-xl font-bold font-lexend tracking-wide">
+          <span className={`text-xl font-bold font-lexend tracking-wide
+            ${dark ? "text-white" : "text-gray-900"}`}>
             {balance !== null ? `${balance.toFixed(2)} $` : '...'}
           </span>
         </div>
@@ -142,27 +165,34 @@ export default function PigMines() {
         {/* Left: Bet Controls */}
         <div className="flex flex-col items-center justify-start w-[20vw] mt-[4vw]">
           {/* Bet Controls Card */}
-          <div className="flex flex-col items-center gap-4 bg-[#232a3d] rounded-2xl shadow-lg px-10 py-8 w-full max-w-[400px]">
+          <div className={`flex flex-col items-center gap-4 rounded-2xl shadow-lg px-10 py-8 w-full max-w-[400px] border-2 border-[#41e1a6]
+            ${dark ? "bg-[#232a3d]" : "bg-white"}`}>
             <form className="flex flex-col items-center gap-2 w-full" onSubmit={e => e.preventDefault()}>
-              <label className="text-white text-lg font-bold mb-1">Bombs</label>
+              <label className={`text-lg font-bold mb-1 ${dark ? "text-white" : "text-gray-900"}`}>Bombs</label>
               <input
                 type="number"
                 min={1}
                 max={24}
                 value={bombs}
                 onChange={e => setBombs(e.target.value.replace(/^0+/, ""))}
-                className="bg-[#181c2f] border border-[#3a415a] text-white text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#1884fc] transition"
+                className={`border text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#1884fc] transition
+                  ${dark
+                    ? "bg-[#181c2f] border-[#3a415a] text-white"
+                    : "bg-[#e0e7ef] border-[#41e1a6] text-gray-900"}`}
                 placeholder="Bombs"
                 required
                 disabled={gameStarted}
               />
-              <label className="text-white text-lg font-bold mb-1 mt-4">Bet Amount</label>
+              <label className={`text-lg font-bold mb-1 mt-4 ${dark ? "text-white" : "text-gray-900"}`}>Bet Amount</label>
               <input
                 type="number"
                 min={0}
                 value={betAmount}
                 onChange={e => setBetAmount(e.target.value)}
-                className="bg-[#181c2f] border border-[#3a415a] text-white text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#1884fc] transition"
+                className={`border text-lg rounded-lg block w-full p-3 text-center focus:outline-none focus:ring-2 focus:ring-[#1884fc] transition
+                  ${dark
+                    ? "bg-[#181c2f] border-[#3a415a] text-white"
+                    : "bg-[#e0e7ef] border-[#41e1a6] text-gray-900"}`}
                 placeholder="Bet amount"
                 required
                 disabled={gameStarted}
@@ -200,10 +230,10 @@ export default function PigMines() {
             )}
             {/* Multiplier display */}
             <div className="flex gap-8 mt-6">
-              <div className="text-white text-lg">
+              <div className={`${dark ? "text-white" : "text-gray-900"} text-lg`}>
                 Current Multiplier: <span className="font-bold">{currentMultiplier?.toFixed(3)}x</span>
               </div>
-              <div className="text-white text-lg">
+              <div className={`${dark ? "text-white" : "text-gray-900"} text-lg`}>
                 Next Multiplier: <span className="font-bold">{nextMultiplier?.toFixed(3)}x</span>
               </div>
             </div>
@@ -212,7 +242,8 @@ export default function PigMines() {
         {/* Right: Game Grid */}
         <div className="flex flex-col items-center justify-center" style={{ width: "70%" }}>
           <div className="relative w-full flex justify-center items-center mt-[-10vw]" style={{ height: 600, minHeight: 600, maxHeight: 600 }}>
-            <div className="grid grid-cols-5 gap-4 bg-[#232a3d] rounded-3xl shadow-2xl p-8" style={{ width: 600, height: 600 }}>
+            <div className={`grid grid-cols-5 gap-4 rounded-3xl shadow-2xl p-8
+              ${dark ? "bg-[#232a3d]" : "bg-white"}`} style={{ width: 600, height: 600 }}>
               {cells.map((cell, idx) => (
                 <div
                   key={idx}
@@ -238,13 +269,41 @@ export default function PigMines() {
                     style={{
                       background: revealed[idx]
                         ? cell === 1
-                          ? "#1a232b"
-                          : "#283c4c"
-                        : "linear-gradient(135deg, #232a3d 60%, #222B4C 100%)",
+                          ? dark ? "#1a232b" : "#fca5a5"
+                          : dark ? "#283c4c" : "#bbf7d0"
+                        : dark
+                          ? "linear-gradient(135deg, #232a3d 60%, #8249B4 100%)"
+                          : "linear-gradient(135deg, #bbf7d0 0%, #60a5fa 100%)",
+                      border: revealed[idx]
+                        ? "2.5px solid #41e1a6"
+                        : dark
+                          ? "2.5px solid #8249B4"
+                          : "2.5px solid #60a5fa",
+                      boxShadow: revealed[idx]
+                        ? cell === 1
+                          ? "0 0 24px 0 #ff3b3b88"
+                          : "0 0 18px 0 #41e1a688"
+                        : dark
+                          ? "0 0 12px 0 #8249B488"
+                          : "0 0 12px 0 #60a5fa88",
                     }}
                   >
                     {/* Card Front */}
-                    <div className="card-face card-front absolute inset-0 w-full h-full flex items-center justify-center rounded-xl backface-hidden"></div>
+                    <div className="card-face card-front absolute inset-0 w-full h-full flex items-center justify-center rounded-xl backface-hidden"
+                      style={{
+                        background: dark
+                          ? "linear-gradient(135deg, #232a3d 60%, #8249B4 100%)"
+                          : "linear-gradient(135deg, #bbf7d0 0%, #60a5fa 100%)",
+                        border: dark
+                          ? "2.5px solid #8249B4"
+                          : "2.5px solid #60a5fa",
+                        boxShadow: dark
+                          ? "0 0 12px 0 #8249B488"
+                          : "0 0 12px 0 #60a5fa88",
+                      }}
+                    >
+                      <span className={`text-3xl font-bold ${dark ? "text-[#D9A2FF]" : "text-[#462320]"}`}>?</span>
+                    </div>
                     {/* Card Back */}
                     <div className="card-face card-back absolute inset-0 w-full h-full flex items-center justify-center rounded-xl backface-hidden rotate-y-180">
                       {revealed[idx] && (
