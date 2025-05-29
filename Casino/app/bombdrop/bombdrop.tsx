@@ -47,11 +47,15 @@ export default function BombDrop() {
   const [history, setHistory] = useState<number[]>([]);
   const [crashed, setCrashed] = useState<boolean>(false);
   const [won, setWon] = useState<boolean>(false); // NEW: win animation state
-  const [dark, setDark] = useState(() =>
-    typeof window !== "undefined"
-      ? document.documentElement.classList.contains("dark")
-      : true
-  );
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") return true;
+      if (storedTheme === "light") return false;
+      return document.documentElement.classList.contains("dark");
+    }
+    return true;
+  });
   const navigate = useNavigate();
 
   const initBalance = () => {
@@ -181,11 +185,27 @@ export default function BombDrop() {
   }, [displayMultiplier, inBet, manuallyStopped]);
 
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setDark(document.documentElement.classList.contains("dark"));
-    });
+    // Sync with <html> class and localStorage
+    const syncTheme = () => {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        setDark(true);
+      } else if (storedTheme === "light") {
+        document.documentElement.classList.remove("dark");
+        setDark(false);
+      } else {
+        setDark(document.documentElement.classList.contains("dark"));
+      }
+    };
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
+    window.addEventListener("storage", syncTheme);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", syncTheme);
+    };
   }, []);
 
   return (

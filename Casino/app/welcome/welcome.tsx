@@ -40,9 +40,15 @@ const zoomStyle = `
 }
 `;
 
+interface RewardObj {
+  claimedAt: string;
+  level: number;
+  canClaimAt: string;
+}
+
 export function Welcome() {
-  const [balance, setBalance] = useState(null);
-  const [reward, setReward] = useState(null);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [reward, setReward] = useState<RewardObj | null>(null);
   const [timeLeft, setTimeLeft] = useState('');
   const [canClaim, setCanClaim] = useState(true);
   const [dark, setDark] = useState(() => {
@@ -90,15 +96,15 @@ export function Welcome() {
     return () => clearInterval(interval);
   }, [reward]);
 
-  const updateClaimStatus = (r) => {
-    if (!r || !r.canClaimAt) {
-      setCanClaim(true);
-      return;
-    }
-    const now = new Date();
-    const claimTime = new Date(r.canClaimAt);
-    setCanClaim(now >= claimTime);
-  };
+  const updateClaimStatus = (r: RewardObj | null) => {
+  if (!r || !r.canClaimAt) {
+    setCanClaim(true);
+    return;
+  }
+  const now = new Date();
+  const claimTime = new Date(r.canClaimAt);
+  setCanClaim(now >= claimTime);
+};
 
   const handleClaimReward = () => {
     if (!canClaim) return;
@@ -111,14 +117,30 @@ export function Welcome() {
     updateClaimStatus(r);
   };
 
-  // Toggle dark mode class on <html>
+  // On mount, sync theme from localStorage if present
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        setDark(true);
+      } else if (storedTheme === "light") {
+        document.documentElement.classList.remove("dark");
+        setDark(false);
+      }
+    }
+  }, []);
+
+  // Toggle dark mode class on <html> and save to localStorage
   const toggleDarkMode = () => {
     setDark((prev) => {
       const next = !prev;
       if (next) {
         document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
       } else {
         document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
       }
       return next;
     });
@@ -143,11 +165,71 @@ export function Welcome() {
     >
       {/* Dark/Light mode toggle button */}
       <button
-        className="fixed top-8 right-12 z-50 px-6 py-2 rounded-full bg-[#e0e7ef]/80 dark:bg-[#232a3d] text-[#232a3d] dark:text-white font-bold shadow hover:bg-blue-100 dark:hover:bg-[#181c2f] transition"
+        className={`
+          fixed top-8 right-30 z-50 px-6 py-2 rounded-full flex items-center gap-2
+          font-bold shadow transition-all duration-300
+          ${dark
+            ? "bg-[#232a3d] text-white hover:bg-[#181c2f]"
+            : "bg-[#e0e7ef]/80 text-[#232a3d] hover:bg-blue-100"}
+          ring-2 ring-[#8249B4] hover:scale-105 active:scale-95
+        `}
         onClick={toggleDarkMode}
         type="button"
+        style={{
+          boxShadow: dark
+            ? "0 0 16px #8249B4cc"
+            : "0 0 16px #60a5fa88",
+          transition: "background 0.3s, color 0.3s, box-shadow 0.3s, transform 0.15s"
+        }}
       >
-        {dark ? "Light Mode" : "Dark Mode"}
+        <span className="relative flex items-center justify-center w-6 h-6">
+          <span
+            className={`
+              absolute transition-all duration-300
+              ${dark
+                ? "opacity-0 scale-75"
+                : "opacity-100 scale-100"}
+            `}
+            style={{ left: 0, top: 0 }}
+            aria-hidden="true"
+          >
+            {/* Sun icon */}
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5" fill="#facc15" />
+              <g stroke="#facc15" strokeWidth="2">
+                <line x1="12" y1="2" x2="12" y2="5"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="5" y2="12"/>
+                <line x1="19" y1="12" x2="22" y2="12"/>
+                <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+                <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+                <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+                <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+              </g>
+            </svg>
+          </span>
+          <span
+            className={`
+              absolute transition-all duration-300
+              ${dark
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-75"}
+            `}
+            style={{ left: 0, top: 0 }}
+            aria-hidden="true"
+          >
+            {/* Moon icon */}
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path
+                d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"
+                fill="#a78bfa"
+              />
+            </svg>
+          </span>
+        </span>
+        <span className="ml-2">
+          {dark ? "Light Mode" : "Dark Mode"}
+        </span>
       </button>
       {/* Inject zoom animation style */}
       <style>{zoomStyle}</style>

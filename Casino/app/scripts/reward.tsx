@@ -1,3 +1,11 @@
+import { useState } from 'react';
+
+interface RewardObj {
+  claimedAt: string;
+  level: number;
+  canClaimAt: string;
+}
+
 function getFormattedDate(): string {
   const now = new Date();
   const year = now.getFullYear();

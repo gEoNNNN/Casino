@@ -28,17 +28,38 @@ export default function Statistics() {
   const [balanceHistory, setBalanceHistory] = React.useState(getBalanceHistory());
 
   // Sync with <html> dark mode class
-  const [dark, setDark] = React.useState(() =>
-    typeof window !== "undefined"
-      ? document.documentElement.classList.contains("dark")
-      : true
-  );
+  const [dark, setDark] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") return true;
+      if (storedTheme === "light") return false;
+      return document.documentElement.classList.contains("dark");
+    }
+    return true;
+  });
+
   React.useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setDark(document.documentElement.classList.contains("dark"));
-    });
+    // Sync with <html> class and localStorage
+    const syncTheme = () => {
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        setDark(true);
+      } else if (storedTheme === "light") {
+        document.documentElement.classList.remove("dark");
+        setDark(false);
+      } else {
+        setDark(document.documentElement.classList.contains("dark"));
+      }
+    };
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
+    window.addEventListener("storage", syncTheme);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", syncTheme);
+    };
   }, []);
 
   // Add this effect to keep balanceHistory up to date
