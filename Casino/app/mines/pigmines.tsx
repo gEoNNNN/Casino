@@ -21,9 +21,10 @@ export default function PigMines() {
       const storedTheme = localStorage.getItem("theme");
       if (storedTheme === "dark") return true;
       if (storedTheme === "light") return false;
-      return document.documentElement.classList.contains("dark");
+      // Use system preference if no theme is stored
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
-    return true;
+    return false; // Default to light on server
   });
 
   useEffect(() => {

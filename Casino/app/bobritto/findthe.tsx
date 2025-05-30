@@ -4,7 +4,6 @@ import { findthebobr } from "../scripts/finthescript";
 import { getBalance, updateBalance } from "../scripts/balance";
 import findthegamebg from "../../assets/img/findthegamebg.png";
 import findthecard from "../../assets/img/findthecard.png";
-import wallet from "../../assets/img/wallet.png";
 
 export default function FindThe() {
   // Balance and bet
@@ -28,9 +27,10 @@ export default function FindThe() {
       const storedTheme = localStorage.getItem("theme");
       if (storedTheme === "dark") return true;
       if (storedTheme === "light") return false;
-      return document.documentElement.classList.contains("dark");
+      // Use system preference if no theme is stored
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
-    return true;
+    return false; // Default to light on server
   });
 
   useEffect(() => {
