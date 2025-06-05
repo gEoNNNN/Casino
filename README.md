@@ -58,3 +58,5 @@ A modern, full-stack casino web application built with React Router, TypeScript,
 ---
 
 Built with ❤️ using React, TypeScript, and React Router.
+
+LINK: https://chimerical-tarsier-a5f927.netlify.app/
